@@ -23,15 +23,15 @@ class EncoderCNN(nn.Module):
 
 class DecoderRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1):
-	# Initalize the layers of the model
+    # Initalize the layers of the model
         super(DecoderRNN, self).__init__()
-	
+
         self.embedding = nn.Embedding(vocab_size, embed_size)
-	
-        self.lstm = nn.LSTM(embed_size, hidden_size, num_layers)
+
+        self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
 
         self.linear_layer = nn.Linear(hidden_size, vocab_size)
-	
+
     
     def forward(self, features, captions):
         embeddings = torch.cat((features.unsqueeze(1), self.embedding(captions[:,:-1])), 1)
@@ -47,8 +47,7 @@ class DecoderRNN(nn.Module):
             hiddens, states = self.lstm(inputs, states)          
             outputs = self.linear_layer(hiddens.squeeze(1))         
             _, predicted = outputs.max(1)                       
-            sampled_ids.append(predicted)
+            sampled_ids.append(predicted.item())
             inputs = self.embedding(predicted)                      
             inputs = inputs.unsqueeze(1)                         
-        sampled_ids = torch.stack(sampled_ids, 1).cpu().numpy().astype(int)[0,:]
-        return sampled_ids.tolist()
+        return sampled_ids
