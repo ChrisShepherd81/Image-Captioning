@@ -49,5 +49,8 @@ class DecoderRNN(nn.Module):
             _, predicted = outputs.max(1)                       
             sampled_ids.append(predicted.item())
             inputs = self.embedding(predicted)                      
-            inputs = inputs.unsqueeze(1)                         
+            inputs = inputs.unsqueeze(1)   
+            # Early return if <end> has been predicted
+            if predicted.item() == 1:
+                return sampled_ids
         return sampled_ids
